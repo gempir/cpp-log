@@ -42,6 +42,7 @@ void handleLink(std::string link) {
         return;
     }
 
+    printMessage("Saving link: " + link);
     linkFile << link << std::endl;
     linksFound.insert(std::pair<std::string, bool>(link, true));
 }
@@ -54,7 +55,6 @@ void handleLine(std::string line)
         std::smatch match;
         if (std::regex_search(line, match, re) && match.size() > 1)
         {
-            printMessage("Found link: " + match.str(1));
             handleLink(match.str(1));
         }
     }
