@@ -21,6 +21,8 @@ std::ofstream linkFile ("../links.txt");
 
 std::map<std::string, bool> linksFound;
 
+std::regex re("(https://[^ ]*(\\.jpg|\\.png|\\.gif)|https://gyazo.com/[^ ]*)");
+
 std::string lastN(std::string input, int n)
 {
      return input.substr(input.size() - n);
@@ -71,7 +73,6 @@ void handleLine(std::string line)
 {
     try
     {
-        std::regex re("(https://[^ ]*(\\.jpg|\\.png|\\.gif)|https://gyazo.com/[^ ]*)");
         std::smatch match;
         if (std::regex_search(line, match, re) && match.size() > 1)
         {
@@ -97,7 +98,11 @@ void scanLog(std::string filePath) {
         boost::iostreams::filtering_istream in;
         in.push(boost::iostreams::gzip_decompressor());
         in.push(file);
-        for(std::string str; std::getline(in, str); )
+        
+        std::string str;
+        str.reserve(5000);
+
+        while(std::getline(in, str))
         {
             handleLine(str);
         }
