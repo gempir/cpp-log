@@ -10,8 +10,11 @@
 #include <regex>
 #include <iostream>
 #include <fstream>
+#include <map>
 
 std::ofstream linkFile ("../links.txt");
+
+std::map<std::string, bool> linksFound;
 
 std::vector<std::string> split(const std::string &s, char delim)
 {
@@ -32,7 +35,15 @@ void printMessage(std::string msg)
 }
 
 void handleLink(std::string link) {
+    std::map<std::string, bool>::iterator it = linksFound.find(link);
+
+    if (it != linksFound.end()) {
+        printMessage("Duplicate found, skipping: " + link);
+        return;
+    }
+
     linkFile << link << std::endl;
+    linksFound.insert(std::pair<std::string, bool>(link, true));
 }
 
 void handleLine(std::string line)
@@ -43,12 +54,13 @@ void handleLine(std::string line)
         std::smatch match;
         if (std::regex_search(line, match, re) && match.size() > 1)
         {
+            printMessage("Found link: " + match.str(1));
             handleLink(match.str(1));
         }
     }
     catch (std::regex_error &e)
     {
-        printMessage("something went wrong" + e.what);
+        printMessage("something went wrong");
         return;
     }
 }
@@ -59,40 +71,13 @@ int main()
     std::string line;
 
     std::int64_t lineCount = 0;
-    std::int64_t wordCount = 0;
-    std::int64_t privmsgCount = 0;
-    std::int64_t clearchatCount = 0;
-    std::int64_t usernoticeCount = 0;
     while (std::getline(file, line))
     {
-        handleLine(line);
         lineCount++;
-        auto words = split(line, ' ');
-        wordCount += words.size();
-
-        if (words[2] == TwitchMessageTypes::PRIVMSG)
-        {
-            privmsgCount++;
-        }
-        else if (words[2] == TwitchMessageTypes::CLEARCHAT)
-        {
-            clearchatCount++;
-        }
-        else if (words[2] == TwitchMessageTypes::USERNOTICE)
-        {
-            usernoticeCount++;
-        }
-        else
-        {
-            std::cout << words[2] + "\n";
-        }
+        handleLine(line);
     }
 
     printMessage("Line count: " + std::to_string(lineCount));
-    printMessage("Word count: " + std::to_string(wordCount));
-    printMessage("Privmsg count: " + std::to_string(privmsgCount));
-    printMessage("Clearchat count: " + std::to_string(clearchatCount));
-    printMessage("Usernotice count: " + std::to_string(usernoticeCount));
 
     linkFile.close();
 
