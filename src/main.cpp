@@ -48,6 +48,7 @@ void handleLine(std::string line)
     }
     catch (std::regex_error &e)
     {
+        printMessage("something went wrong" + e.what);
         return;
     }
 }
